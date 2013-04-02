@@ -11,7 +11,7 @@ trait CSVReader[+A] extends Parsers {
   def parser: Parser[A]
 
   private def splitLine( line: String ) = 
-    line.split(separator).toList
+    CSVTokenizer( line, separator, None )
 
   def read( lines: Stream[String] ) = {
     def acc( 

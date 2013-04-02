@@ -8,12 +8,12 @@ trait Parser[+A] {
 
   def map[B]( f: A=>B ): Parser[B] = Parser( (s,p) => parse(s,p).map(f) )
   def ^^[B]( f: A=>B ): Parser[B] = map(f)
-  def flatMap[B]( f: A=>Parser[B] ): Parser[B] = Parser{ (s,p) => 
+  /*def flatMap[B]( f: A=>Parser[B] ): Parser[B] = Parser{ (s,p) => 
     parse(s,p) match {
       case Success(a,r,q) => f(a).parse(r,q.nextColumn)
       case f: Failure => f
     }
-  }
+  }*/
   def ~[B]( pb: Parser[B] ): Parser[~[A,B]] = Parser{ (s,p) =>
     parse( s, p ) match {
       case f: Failure => f
@@ -44,19 +44,10 @@ object Parser {
       def parse( s: Seq[String], pos: Pos ) = f(s,pos)
     }
 
-  def single[A]( f: String=>A ): Parser[A] = Parser{ (s,pos) =>
-    if( s.isEmpty ) Failure( "Not enough elements", pos )
-    else try {
-      val a = f(s.head)
-      Success( a, s.tail, pos )
-    } catch {
-      case e: Exception => Failure( e.toString, pos )
-    }
+  def unit[A]( a: A ): Parser[A] = Parser{ (s,pos) =>
+    Success( a, s.tail, pos )
   }
 
-  val integer = single[Int]( s => s.toInt )
-  val boolean = single[Boolean]( s => s.toBoolean )
-  val string = single[String](identity)
 }
 
 

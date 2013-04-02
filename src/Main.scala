@@ -4,20 +4,32 @@ object Main extends App {
 
   import Parser._
 
-  val color = integer.repeat(3) ^^ {
-    case r :: g :: b :: Nil  => (r,g,b)
+  val csvParser = new CSVReader[String] {
+    
+    val separator=" "
+    val quoted=false
+
+    lazy val color = integer(3) ^^ { lst=>
+      val r :: g :: b :: Nil  = lst
+      (r,g,b)
+    } 
+
+    lazy val parser = string ~ color ^^ {
+      case label ~ c => s"$label: $c"
+    }
+
   }
 
-  val parser = string ~ color ^^ {
-    case label ~ c => s"$label: $c"
-  }
+  
+  val in1 = "purple,255,0,255"
+  val in2 = "red,255,0,0"
+  val in3 = "blue,0,0,255"
 
-  val input = Seq( "purple", "255", "0", "255" )
+  val input = List( in1, in2, in3 ).toStream
 
-  parser.parse(input) match {
-    case Success( s, _ ) => println(s)
-    case Failure => println("FAILURE")
-  }
+  val output = csvParser.read(input)
+
+  println( output.toList )
   
 
 }

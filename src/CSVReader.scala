@@ -5,13 +5,14 @@ import scala.io.Codec
 
 abstract class CSVReader[+A]( 
   separator: Char, 
-  quote: Option[Char]=None
+  quote: Option[Char]=None,
+  trim: Boolean=false
 ) extends Parsers {
 
   def parser: Parser[A]
 
-  private def splitLine( line: String ) = 
-    CSVTokenizer( line, separator, quote )
+  private def split( line: String ) = 
+    CSVTokenizer( line, separator, quote, trim )
 
   def readFile( filename: String )
 	      ( implicit codec: Codec ): Result[Seq[A]] = 
@@ -32,7 +33,7 @@ abstract class CSVReader[+A](
       }
 
     val ll = lines.zipWithIndex.map{ 
-      case (l,i) => parser.parse( splitLine(l), Pos(i,0) ) 
+      case (l,i) => parser.parse( split(l), Pos(i,0) ) 
     }
 
     acc( ll, Success( Seq.empty[A], Seq(), Pos(0,0) ) )

@@ -13,32 +13,44 @@ extends FreeSpec with ShouldMatchers with PropertyChecks {
 
     "can accept a custom separator" in {
       val in = "1;2;3"
-      val out = csv(in,";",None)
+      val out = csv(in,';',None,false)
       out should be (Seq("1","2","3"))
     }
 
     "must treat repeated seps as empty element" in {
       val in = "1;2;;3"
-      val out = csv(in,";",None)
+      val out = csv(in,';',None,false)
       out should be (Seq("1","2","","3"))
     }
 
     "should not ignore whitespaces" in {
       val in = " 1;2 ; ;  3   "
-      val out = csv(in,";",None)
+      val out = csv(in,';',None,false)
       out should be (Seq(" 1","2 "," ","  3   "))
     }
 
     "must recognize quoted elts when asked" in {
       val in = """1;"2";3"""
-      val out = csv(in,";",Some("\""))
+      val out = csv(in,';',Some('"'),false)
       out should be (Seq("1","2","3"))
     }
 
     "must ignore separators inside quotes" in {
       val in = """1;"2;3""""
-      val out = csv(in,";",Some("\""))
+      val out = csv(in,';',Some('"'),false)
       out should be (Seq("1","2;3"))
+    }
+
+    "can trim elements before parsing" in {
+      val in = " 1;2 ; ;  3   "
+      val out = csv(in,';',Some('"'), true)
+      out should be (Seq("1","2","","3"))
+    }
+
+    "must preserve quoted whites when trimming" in {
+      val in = """1  ;  " 2"; "3  "  """
+      val out = csv(in,';',Some('"'), true)
+      out should be (Seq("1"," 2","3  "))
     }
 
 

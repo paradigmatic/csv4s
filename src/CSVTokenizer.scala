@@ -2,7 +2,9 @@ package org.streum.csv4s
 
 object CSVTokenizer {
 
-  private def tokenize( line: String, sep: Char, quote: Char ): Seq[String] = {
+  private def tokenize( 
+    line: String, sep: Char, quote: Char 
+  ): Seq[String] = {
     def tok( 
       rest: String, tokens: Seq[String], inquote: Boolean 
     ): Seq[String] = 
@@ -19,9 +21,21 @@ object CSVTokenizer {
   }
 
 
-  def apply( line: String, sep: Char, quote: Option[Char] ): Seq[String] = {
+  def apply( 
+    line: String, 
+    sep: Char, 
+    quote: Option[Char], 
+    trim: Boolean 
+  ): Seq[String] = {
     val q = quote.getOrElse( "\0".head )
     tokenize(line,sep,q)
   } 
+
+  sealed trait TokenState
+  case class Elt( elt: String ) extends TokenState
+  case class Quoted( elt: String ) extends TokenState
+  case class End( elt: String )
+
+
 
 }

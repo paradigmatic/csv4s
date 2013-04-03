@@ -14,8 +14,9 @@ trait Parsers {
 
   val string = single[String](identity)
   val integer = single[Int]( s => s.toInt )
-  val long = single[Int]( s => s.toLong )
-  val long = single[Int]( s => s.toLong )
+  val long = single[Long]( s => s.toLong )
+  val float = single[Float]( s => s.toFloat )
+  val double = single[Double]( s => s.toDouble )
   val boolean = single[Boolean]( s => s.toBoolean )
 
 

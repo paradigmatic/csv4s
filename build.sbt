@@ -1,6 +1,6 @@
 organization := "org.streum"
 
-name := "tabulator"
+name := "csv4s"
 
 version := "0.1.0"
 

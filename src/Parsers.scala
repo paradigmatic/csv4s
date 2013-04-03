@@ -12,9 +12,12 @@ trait Parsers {
     }
   }
 
-  val integer = single[Int]( s => s.toInt )
-  val boolean = single[Boolean]( s => s.toBoolean )
   val string = single[String](identity)
+  val integer = single[Int]( s => s.toInt )
+  val long = single[Int]( s => s.toLong )
+  val long = single[Int]( s => s.toLong )
+  val boolean = single[Boolean]( s => s.toBoolean )
+
 
 
 }

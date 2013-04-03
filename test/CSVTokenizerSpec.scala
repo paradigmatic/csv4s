@@ -30,7 +30,7 @@ extends FreeSpec with ShouldMatchers with PropertyChecks {
     }
 
     "must recognize quoted elts when asked" in {
-      val in = "1;\"2\";3"
+      val in = """1;"2";3"""
       val out = csv(in,";",Some("\""))
       out should be (Seq("1","2","3"))
     }

@@ -2,17 +2,26 @@ package org.streum.csv4s
 
 object CSVTokenizer {
 
-  private def unquote(quote: String): String=>String = s =>
-    if( s.startsWith(quote) && s.endsWith(quote) )
-      s.substring(1,s.size-1)
-    else s
+  private def tokenize( line: String, sep: Char, quote: Char ): Seq[String] = {
+    def tok( 
+      rest: String, tokens: Seq[String], inquote: Boolean 
+    ): Seq[String] = 
+      if( rest.isEmpty ) 
+	tokens.reverse
+      else if( rest.head == sep && ! inquote ) 
+	     tok( rest.tail, "" +: tokens, inquote )
+      else if( rest.head == quote )
+	     tok( rest.tail, tokens, !inquote )
+      else 
+	tok( rest.tail, (tokens.head :+ rest.head) +: tokens.tail, inquote )
 
-  def apply( line: String, sep: String, quote: Option[String] ): Seq[String] = {
-    val elts = line.split(sep).toList
-    quote match {
-      case Some(q) => elts.map(unquote(q))
-      case None => elts
-    }
+    tok( line, Seq(""), false )
+  }
+
+
+  def apply( line: String, sep: Char, quote: Option[Char] ): Seq[String] = {
+    val q = quote.getOrElse( "\0".head )
+    tokenize(line,sep,q)
   } 
 
 }

@@ -1,19 +1,26 @@
 package org.streum.csv4s
 
 import scala.io.Source
+import scala.io.Codec
 
-trait CSVReader[+A] extends Parsers {
-
-  def separator: String
-
-  def quoted: Boolean
+abstract class CSVReader[+A]( 
+  separator: Char, 
+  quote: Option[Char]=None
+) extends Parsers {
 
   def parser: Parser[A]
 
   private def splitLine( line: String ) = 
-    CSVTokenizer( line, separator, None )
+    CSVTokenizer( line, separator, quote )
 
-  def read( lines: Stream[String] ) = {
+  def readFile( filename: String )
+	      ( implicit codec: Codec ): Result[Seq[A]] = 
+    readSource( Source.fromFile(filename) )
+
+  def readSource( src: Source ): Result[Seq[A]] =
+    read( src.getLines.toStream )
+
+  def read( lines: Stream[String] ): Result[Seq[A]] = {
     def acc( 
       elts: Stream[Result[A]], res: Success[Seq[A]] 
     ): Result[Seq[A]] = 

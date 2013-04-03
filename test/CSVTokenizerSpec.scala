@@ -53,6 +53,20 @@ extends FreeSpec with ShouldMatchers with PropertyChecks {
       out should be (Seq("1"," 2","3  "))
     }
 
+    "must complain when more than two quotes per elements" in {
+      val in = "1;\"2\"3\";4"
+      intercept[CSVTokenizer.CSVTokenException]{
+	csv(in,';',Some('"'), false)
+      }
+    }
+
+    "must complain if last quotation is not closed" in {
+      val in = "1;\"2;3"
+      intercept[CSVTokenizer.CSVTokenException]{
+	csv(in,';',Some('"'), false)
+      }
+    }
+
 
   }
 

@@ -2,24 +2,14 @@ package org.streum.csv4s
 
 object CSVTokenizer {
 
-  private def tokenize( 
-    line: String, sep: Char, quote: Char 
-  ): Seq[String] = {
-    def tok( 
-      rest: String, tokens: Seq[String], inquote: Boolean 
-    ): Seq[String] = 
-      if( rest.isEmpty ) 
-	tokens.reverse
-      else if( rest.head == sep && ! inquote ) 
-	     tok( rest.tail, "" +: tokens, inquote )
-      else if( rest.head == quote )
-	     tok( rest.tail, tokens, !inquote )
-      else 
-	tok( rest.tail, (tokens.head :+ rest.head) +: tokens.tail, inquote )
+  case class CSVTokenException(msg:String) extends RuntimeException(msg)
 
-    tok( line, Seq(""), false )
+  sealed trait TokenState {
+    def elt: String
   }
-
+  case class Element( elt: String ) extends TokenState
+  case class Quote( elt: String ) extends TokenState
+  case class EndQuote( elt: String ) extends TokenState
 
   def apply( 
     line: String, 
@@ -27,14 +17,43 @@ object CSVTokenizer {
     quote: Option[Char], 
     trim: Boolean 
   ): Seq[String] = {
-    val q = quote.getOrElse( "\0".head )
-    tokenize(line,sep,q)
+    def rec( 
+      rest: String, state: TokenState, tokens: Seq[String] 
+    ): Seq[String] = if( rest.isEmpty ) {
+      state match {
+	case Quote(_) => throw CSVTokenException(
+	  "Malformed CSV: last elements lacks an end-quote."
+	)
+	case other => (other.elt +: tokens).reverse
+      }
+    } else {
+      val next = rest.head
+      if( next == sep ) state match {
+	case Quote( elt ) => 
+	  rec( rest.tail, Quote(elt :+ next), tokens )
+	case other => rec( rest.tail, Element(""), other.elt +: tokens )
+      } else if( next == ' ' && trim ) state match {
+	case Quote(elt) => rec( rest.tail, Quote(elt :+ next), tokens )
+	case other => rec( rest.tail, other, tokens )
+      } else if( quote.isDefined && next == quote.get ) state match {
+	case Element(_) =>
+	  rec( rest.tail, Quote(""), tokens )
+	case Quote(elt) => 
+	  rec( rest.tail, EndQuote(elt), tokens )
+	case EndQuote(_) => 
+	  throw CSVTokenException(
+	    "Malformed CSV: quote closed several times"
+	  )
+      } else state match {
+	case Quote(elt) => rec( rest.tail, Quote(elt :+ next), tokens )
+	case Element(elt) => rec( rest.tail, Element(elt :+ next), tokens )
+	case EndQuote(elt) => rec( rest.tail, EndQuote(elt), tokens )
+      }
+    }
+    rec( line, Element(""), Seq() )
   } 
 
-  sealed trait TokenState
-  case class Elt( elt: String ) extends TokenState
-  case class Quoted( elt: String ) extends TokenState
-  case class End( elt: String )
+
 
 
 

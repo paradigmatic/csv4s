@@ -1,6 +1,7 @@
 package org.streum.csv4s
+package examples
 
-object Main extends App {
+object Colors extends App {
 
   case class Color( name: String, red: Int, green: Int, blue: Int )
 

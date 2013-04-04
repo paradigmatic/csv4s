@@ -6,7 +6,8 @@ import scala.io.Codec
 abstract class CSVReader[+A]( 
   separator: Char, 
   quote: Option[Char]=None,
-  trim: Boolean=false
+  trim: Boolean=false,
+  header: Boolean=false
 ) extends Parsers {
 
   def parser: Parser[A]
@@ -31,8 +32,8 @@ abstract class CSVReader[+A](
 	case Success( a, rest, pos ) => 
 	  acc( elts.tail, Success( res.get :+ a, rest, pos ) )
       }
-
-    val ll = lines.zipWithIndex.map{ 
+    val ls = if( header ) lines.tail else lines
+    val ll = ls.zipWithIndex.map{ 
       case (l,i) => parser.parse( split(l), Pos(i,0) ) 
     }
 
